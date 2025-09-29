@@ -8,7 +8,6 @@ module top_machine (
   input  wire btnR,    // Quarter
   output wire [3:0] led
 );
-  // Reloj lento para interacción humana (usa tu clockdivider)
   wire slow_clk;
   wire reset_n = ~btnC;
 
@@ -17,8 +16,6 @@ module top_machine (
     .reset_n(reset_n),
     .out_clk(slow_clk)
   );
-
-  // Sincronización y detección de flanco (1 pulso de 1 ciclo en slow_clk por pulsación)
   reg [1:0] syncN, syncD, syncQ;
   reg prevN, prevD, prevQ;
 
@@ -27,11 +24,10 @@ module top_machine (
       syncN <= 2'b00; syncD <= 2'b00; syncQ <= 2'b00;
       prevN <= 1'b0;  prevD <= 1'b0;  prevQ <= 1'b0;
     end else begin
-      // doble FF de sincronización (muestras directas de botones)
+
       syncN <= {syncN[0], btnL};
       syncD <= {syncD[0], btnU};
       syncQ <= {syncQ[0], btnR};
-      // guardar estado anterior para detectar flanco
       prevN <= syncN[1];
       prevD <= syncD[1];
       prevQ <= syncQ[1];
@@ -42,10 +38,10 @@ module top_machine (
   wire Dime_pulse    =  syncD[1] & ~prevD;
   wire Quarter_pulse =  syncQ[1] & ~prevQ;
 
-  // Señales de salida
+
   wire Dispense, ReturnNickel, ReturnDime, ReturnTwoDimes;
 
-  // DUT (usa el nombre correcto: machineDispense)
+  // DUT 
   machineDispense u_fsm (
     .clk           (slow_clk),
     .reset_n       (reset_n),
