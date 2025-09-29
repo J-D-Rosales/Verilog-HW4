@@ -52,15 +52,12 @@ module machineDispense (
 
   reg [3:0] state, nextstate;
 
-  // Registro de estado (reset asíncrono activo en bajo)
   always @(posedge clk or negedge reset_n) begin
     if (!reset_n) state <= S0;
     else          state <= nextstate;
   end
 
-  // Lógica combinacional (Moore): nextstate + salidas
   always @* begin
-    // defaults (evitan latches)
     nextstate = state;
     Dispense = 1'b0;
     ReturnNickel = 1'b0;
@@ -68,7 +65,6 @@ module machineDispense (
     ReturnTwoDimes = 1'b0;
 
     case (state)
-      // Acumulación
       S0:  begin
               if      (Nickel)  nextstate = S5;
               else if (Dime)    nextstate = S10;
@@ -95,7 +91,6 @@ module machineDispense (
               else if (Quarter) nextstate = P45;   // 20+25=45
             end
 
-      // Pago (un ciclo y regreso a S0)
       P25: begin
               Dispense = 1'b1;
               nextstate = S0;
