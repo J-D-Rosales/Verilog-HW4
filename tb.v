@@ -5,7 +5,6 @@ module tb();
   reg Nickel, Dime, Quarter;
   wire Dispense, ReturnNickel, ReturnDime, ReturnTwoDimes;
 
-  // DUT (usa tu módulo tal cual)
   machimeDispense dut(
     .clk(clk), .reset(reset),
     .Nickel(Nickel), .Dime(Dime), .Quarter(Quarter),
@@ -15,49 +14,108 @@ module tb();
 
   // Reloj
   initial clk = 1'b0;
-  always #5 clk = ~clk;   // periodo 10ns
+  always #5 clk = ~clk;  
 
-  // Estímulos (un pulso de 1 ciclo por moneda)
   initial begin
-    // init
     reset = 1'b0; Nickel = 0; Dime = 0; Quarter = 0;
-    #20;                 // en reset un par de ciclos
-    reset = 1'b1;        // salir de reset
+    #20;                
+    reset = 1'b1;   
     #20;
 
-    // TC1: Exacto 25 con Quarter -> Dispense
     Quarter = 1; #10; Quarter = 0; #20;
 
-    // TC2: 5 + 10 + 10 = 25 (N, D, D) -> Dispense
     Nickel = 1;  #10; Nickel = 0;  #10;
     Dime   = 1;  #10; Dime   = 0;  #10;
     Dime   = 1;  #10; Dime   = 0;  #20;
 
-    // TC3: 10 + 10 + 10 = 30 (D, D, D) -> Dispense + ReturnNickel
     Dime   = 1;  #10; Dime   = 0;  #10;
     Dime   = 1;  #10; Dime   = 0;  #10;
     Dime   = 1;  #10; Dime   = 0;  #20;
 
-    // TC4: 10 + 25 = 35 (D, Q) -> Dispense + ReturnDime
     Dime   = 1;  #10; Dime   = 0;  #10;
     Quarter= 1;  #10; Quarter= 0;  #20;
 
-    // TC5: 15 + 25 = 40 (N, D, Q) -> Dispense + ReturnDime + ReturnNickel
     Nickel = 1;  #10; Nickel = 0;  #10;
     Dime   = 1;  #10; Dime   = 0;  #10;
     Quarter= 1;  #10; Quarter= 0;  #20;
 
-    // TC6: 20 + 25 = 45 (D, D, Q) -> Dispense + ReturnTwoDimes
     Dime   = 1;  #10; Dime   = 0;  #10;
     Dime   = 1;  #10; Dime   = 0;  #10;
     Quarter= 1;  #10; Quarter= 0;  #20;
 
-    // TC7: Reset a mitad de compra (tras 5c), luego quarter
     Nickel = 1;  #10; Nickel = 0;  #10;
-    reset  = 0;  #20;              // aplicar reset (activo en bajo)
-    reset  = 1;  #20;              // salir de reset
+    reset  = 0;  #20;          
+    reset  = 1;  #20;          
     Quarter= 1;  #10; Quarter= 0;  #20;
 
     $finish;
   end
+endmodule
+
+module tb_soda_mealy_simple;
+
+
+  reg clk;
+  reg reset;       
+  reg Nickel, Dime, Quarter;
+
+  wire Dispense, ReturnNickel, ReturnDime, ReturnTwoDimes;
+
+  soda_mealy_fsm dut (
+    .clk(clk),
+    .rst_n(reset),         
+    .Nickel(Nickel),
+    .Dime(Dime),
+    .Quarter(Quarter),
+    .Dispense(Dispense),
+    .ReturnNickel(ReturnNickel),
+    .ReturnDime(ReturnDime),
+    .ReturnTwoDimes(ReturnTwoDimes)
+  );
+
+  initial clk = 1'b0;
+  always #5 clk = ~clk;
+
+  initial begin
+    $dumpfile("soda_mealy.vcd");
+    $dumpvars(0, tb_soda_mealy_simple);
+  end
+
+  initial begin
+
+    Nickel = 0; Dime = 0; Quarter = 0;
+    reset  = 1'b0;
+    #20;               
+    reset = 1'b1;        
+    #20;
+
+    Quarter = 1; #10; show("TC1 Quarter=1"); Quarter = 0; #20;
+
+    Nickel = 1;  #10; show("TC2 N=1"); Nickel = 0;  #10;
+    Dime   = 1;  #10; show("TC2 D=1"); Dime   = 0;  #10;
+    Dime   = 1;  #10; show("TC2 D=1"); Dime   = 0;  #20;
+
+    Dime   = 1;  #10; show("TC3 D=1"); Dime   = 0;  #10;
+    Dime   = 1;  #10; show("TC3 D=1"); Dime   = 0;  #10;
+    Dime   = 1;  #10; show("TC3 D=1"); Dime   = 0;  #20;
+
+    Dime   = 1;  #10; show("TC4 D=1"); Dime   = 0;  #10;
+    Quarter= 1;  #10; show("TC4 Q=1"); Quarter= 0;  #20;
+
+    Nickel = 1;  #10; show("TC5 N=1"); Nickel = 0;  #10;
+    Dime   = 1;  #10; show("TC5 D=1"); Dime   = 0;  #10;
+    Quarter= 1;  #10; show("TC5 Q=1"); Quarter= 0;  #20;
+
+    Dime   = 1;  #10; show("TC6 D=1"); Dime   = 0;  #10;
+    Dime   = 1;  #10; show("TC6 D=1"); Dime   = 0;  #10;
+    Quarter= 1;  #10; show("TC6 Q=1"); Quarter= 0;  #20;
+
+    Nickel = 1;  #10; show("TC7 N=1 (antes de reset)"); Nickel = 0;  #10;
+    reset  = 0;  #20;           
+    reset  = 1;  #20;            
+    Quarter= 1;  #10; show("TC7 Q=1 (después de reset)"); Quarter= 0;  #20;
+    $display("Fin de pruebas.");
+    $finish;
+  end
+
 endmodule
