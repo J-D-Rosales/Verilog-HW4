@@ -1,8 +1,8 @@
 `timescale 1ns/1ns
 
 module top_machine_switches (
-  input  wire clk,         // 100 MHz
-  input  wire btnC,        // reset activo alto
+  input  wire clk,        
+  input  wire btnC,       
   input  wire [2:0] sw,    // sw[0]=Nickel, sw[1]=Dime, sw[2]=Quarter
   output wire [3:0] led
 );
@@ -41,7 +41,6 @@ module top_machine_switches (
   // Señales de salida
   wire Dispense, ReturnNickel, ReturnDime, ReturnTwoDimes;
 
-  // FSM (tu diseño)
   machineDispense u_fsm (
     .clk           (slow_clk),
     .reset_n       (reset_n),
