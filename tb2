@@ -1,0 +1,24 @@
+`timescale 1ns/1ps
+
+module tb_fsm;
+  reg clk; reg rst_n; reg [3:0] x;
+  wire z_moore, z_mealy;
+
+  fsm_moore u1(.clk(clk),.rst_n(rst_n),.x(x),.z(z_moore));
+  fsm_mealy u2(.clk(clk),.rst_n(rst_n),.x(x),.z(z_mealy));
+
+  initial clk=0; always #5 clk=~clk;
+
+  initial begin
+    $dumpfile("wave.vcd"); $dumpvars(0,tb_fsm);
+    x=0; rst_n=0; #20; rst_n=1; #10;
+
+    x=3; #10; x=5; #10; x=8;  #10;
+    x=2; #10; x=5; #10; x=13; #10;
+    x=4; #10; x=7; #10; x=1;  #10;
+    x=12;#10; x=6; #10; x=2;  #10;
+    x=1; #10; x=3; #10; x=14; #10;
+
+    $finish;
+  end
+endmodule
